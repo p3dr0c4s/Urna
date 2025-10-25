@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Urna Eletrônica — Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724; /* dark navy */
+      --card:#0b1220; /* card */
+      --glass: rgba(255,255,255,0.04);
+      --accent: #00c2a8;
+      --muted: #9aa7b2;
+      --success: #34d399;
+      --danger: #fb7185;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(2,6,23,0.6);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(0,194,168,0.06), transparent),
+                  linear-gradient(180deg, rgba(8,12,20,1) 0%, rgba(6,10,16,1) 100%);
+      color:#e6eef3;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;align-items:center;justify-content:center;padding:32px;
+      gap:24px;
+    }
+
+    /* Layout */
+    .container{
+      width:100%;max-width:1100px;display:grid;grid-template-columns: 420px 1fr;gap:28px;align-items:start;
+    }
+
+    /* Left panel (urna) */
+    .urna{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;border:1px solid rgba(255,255,255,0.03);
+    }
+    .screen{
+      background:linear-gradient(180deg, rgba(6,10,16,0.95), rgba(8,12,20,0.85));
+      border-radius:12px;padding:18px;min-height:380px;display:flex;flex-direction:column;gap:14px;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{
+      width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#5eead4);display:flex;align-items:center;justify-content:center;color:#022; font-weight:800;box-shadow:0 6px 20px rgba(0,194,168,0.12);
+    }
+    .brand h1{font-size:18px;margin:0}
+    .brand p{margin:0;color:var(--muted);font-size:13px}
+
+    .vote-area{display:flex;gap:12px;align-items:flex-start}
+    .candidate{
+      background:var(--glass);padding:12px;border-radius:10px;flex:1;min-width:0;display:flex;gap:12px;align-items:center;border:1px solid rgba(255,255,255,0.02)
+    }
+    .avatar{width:84px;height:84px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;box-shadow:0 6px 18px rgba(2,6,23,0.5)}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .info{min-width:0}
+    .info .name{font-weight:700;font-size:16px}
+    .info .number{color:var(--muted);font-size:13px}
+
+    .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:190px}
+    .key{padding:14px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;user-select:none}
+    .key:active{transform:translateY(1px)}
+
+    .controls{display:flex;gap:10px;margin-top:12px}
+    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn--confirm{background:linear-gradient(90deg,var(--accent),#00e6c2);color:#022}
+    .btn--white{background:#f8fafc;color:#061124}
+    .btn--corrige{background:#ffedd5;color:#3b2b00}
+
+    /* Right panel (painel administrativo / resumo) */
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;border:1px solid rgba(255,255,255,0.03);
+      min-height:520px;display:flex;flex-direction:column;gap:12px
+    }
+    .panel h2{margin:0;font-size:16px}
+    .stats{display:flex;gap:12px;flex-wrap:wrap}
+    .stat{flex:1;min-width:140px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));padding:12px;border-radius:10px}
+    .stat .value{font-size:20px;font-weight:800}
+    .log{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:12px;border-radius:10px;flex:1;overflow:auto}
+
+    /* receipt */
+    .receipt{position:fixed;right:28px;bottom:28px;background:rgba(2,6,23,0.7);backdrop-filter:blur(6px);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);display:none}
+
+    /* modal */
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);backdrop-filter:blur(3px);}
+    .modal .card{background:linear-gradient(180deg,#061420,#071826);padding:20px;border-radius:12px;max-width:420px;width:100%;box-shadow:var(--shadow)}
+
+    /* responsive */
+    @media (max-width:980px){
+      .container{grid-template-columns:1fr;}
+    }
+
+    /* small helper */
+    .muted{color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="urna" aria-label="Urna Eletrônica">
+      <div class="screen" role="application" aria-labelledby="tituloUrna">
+        <div class="brand">
+          <div class="logo">UE</div>
+          <div>
+            <h1 id="tituloUrna">Urna Eletrônica — Demo</h1>
+            <p class="muted">Interface de votação — acessível e responsiva</p>
+          </div>
+        </div>
+
+        <div class="vote-area">
+          <div class="candidate" id="candidateCard">
+            <div class="avatar" id="candidateAvatar"><!-- imagem inserida via JS --></div>
+            <div class="info">
+              <div class="name" id="candidateName">Aguardando número</div>
+              <div class="number" id="candidateNumber">&nbsp;</div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <div class="muted">Número:</div>
+              <div style="font-weight:800;font-size:22px" id="inputNumber">&nbsp;</div>
+            </div>
+
+            <div class="keypad" role="grid" aria-label="Teclado numérico">
+            </div>
+
+            <div class="controls">
+              <button class="btn btn--white" id="corrigeBtn">Corrige</button>
+              <button class="btn btn--corrige" id="brancoBtn">Branco</button>
+              <button class="btn btn--confirm" id="confirmBtn">Confirma</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="muted" style="margin-top:6px">Dica: use o teclado numérico ou clique nos números para digitar o número do candidato.</div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div class="muted">Status: <span id="statusText">Pronto</span></div>
+        <div class="muted">Votos totais: <strong id="totalVotes">0</strong></div>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Painel de controle">
+      <h2>Painel de Votação</h2>
+      <div class="stats">
+        <div class="stat">
+          <div class="muted">Votos válidos</div>
+          <div class="value" id="validVotes">0</div>
+        </div>
+        <div class="stat">
+          <div class="muted">Votos em branco</div>
+          <div class="value" id="blankVotes">0</div>
+        </div>
+        <div class="stat">
+          <div class="muted">Votos nulos</div>
+          <div class="value" id="nullVotes">0</div>
+        </div>
+      </div>
+
+      <div class="log" id="log" aria-live="polite">
+        <div class="muted">Registro de urnas</div>
+        <ol id="events" style="padding-left:18px;margin-top:8px"></ol>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn--white" id="resetBtn">Reiniciar</button>
+        <button class="btn btn--confirm" id="exportBtn">Exportar resumo</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- receipt -->
+  <div class="receipt" id="receipt">
+    <div style="font-weight:700">Comprovante</div>
+    <div id="receiptText" style="font-size:13px;color:var(--muted);margin-top:8px">—</div>
+  </div>
+
+  <!-- modal template -->
+  <template id="modalTpl">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="card">
+        <h3 id="modalTitle">Confirmar voto</h3>
+        <p id="modalBody" class="muted">Tem certeza que deseja confirmar o voto?</p>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+          <button class="btn btn--white" data-action="cancel">Cancelar</button>
+          <button class="btn btn--confirm" data-action="ok">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    // ===== Simulação de candidatos (falsos) =====
+    // Agora geramos avatares SVG detalhados dinamicamente (sem depender de serviços externos).
+    const CANDIDATOS = {
+      '12': {nome: 'Mariana Silva', partido: 'Partido A'},
+      '34': {nome: 'Carlos Pereira', partido: 'Partido B'},
+      '56': {nome: 'João Costa', partido: 'Partido C'},
+      '78': {nome: 'Ana Rocha', partido: 'Partido D'},
+      '90': {nome: 'Luiz Ramos', partido: 'Partido E'}
+    };
+
+    // estado
+    let input = '';
+    let total = 0;
+    const stats = { valid:0, blank:0, null:0 };
+
+    // elementos
+    const keypadEl = document.querySelector('.keypad');
+    const inputNumberEl = document.getElementById('inputNumber');
+    const candidateNameEl = document.getElementById('candidateName');
+    const candidateNumberEl = document.getElementById('candidateNumber');
+    const candidateAvatarEl = document.getElementById('candidateAvatar');
+    const statusTextEl = document.getElementById('statusText');
+    const eventsEl = document.getElementById('events');
+    const totalVotesEl = document.getElementById('totalVotes');
+    const validVotesEl = document.getElementById('validVotes');
+    const blankVotesEl = document.getElementById('blankVotes');
+    const nullVotesEl = document.getElementById('nullVotes');
+    const receiptEl = document.getElementById('receipt');
+    const receiptTextEl = document.getElementById('receiptText');
+
+    // cria teclado
+    for(let n=1;n<=9;n++){ createKey(String(n)); }
+    createKey('0');
+
+    function createKey(label){
+      const btn = document.createElement('button');
+      btn.className='key';
+      btn.type='button';
+      btn.textContent=label;
+      btn.addEventListener('click',()=>appendDigit(label));
+      keypadEl.appendChild(btn);
+    }
+
+    function appendDigit(d){
+      if(input.length>=2) return; // limite 2 dígitos (exemplo)
+      input += d;
+      renderInput();
+      playBeep();
+    }
+
+    function renderInput(){
+      // Mostramos os números em branco (mas mantemos o valor internamente).
+      inputNumberEl.textContent = input ? ' ' : '—'; // espaço fino quando há input
+
+      if(input && CANDIDATOS[input]){
+        const c = CANDIDATOS[input];
+        candidateNameEl.textContent = c.nome + ' — ' + c.partido;
+        candidateNumberEl.textContent = ' '; // esconder número
+        const svg = generateAvatarSVG(c.nome, input);
+        renderAvatar(svg, c.nome);
+      } else if(input){
+        candidateNameEl.textContent = 'Número inválido';
+        candidateNumberEl.textContent = ' ';
+        const svg = generateAvatarSVG('Desconhecido', input);
+        renderAvatar(svg, '??');
+      } else {
+        candidateNameEl.textContent = 'Aguardando número';
+        candidateNumberEl.textContent = ' ';
+        const svg = generateAvatarSVG('Placeholder', '00');
+        renderAvatar(svg, '?');
+      }
+    }
+
+    function renderAvatar(svgDataUrl, alt){
+      candidateAvatarEl.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = svgDataUrl;
+      img.alt = alt;
+      candidateAvatarEl.appendChild(img);
+    }
+
+    // ===== Avatar generator (SVG) =====
+    // Gera um SVG baseado em um hash simples do nome/seed para variar traços, cor de pele, cabelo, acessórios.
+    function hashString(s){
+      let h=2166136261;
+      for(let i=0;i<s.length;i++){
+        h ^= s.charCodeAt(i);
+        h += (h<<1) + (h<<4) + (h<<7) + (h<<8) + (h<<24);
+      }
+      return (h>>>0).toString(16);
+    }
+
+    function pickFrom(seed, arr){
+      const h = parseInt(hashString(seed).slice(-6),16);
+      return arr[h % arr.length];
+    }
+
+    function generateAvatarSVG(name, seed){
+      // palette choices
+      const skinTones = ['#F2D6C9','#E6B89B','#D9A07E','#B9805A','#8C5C3A'];
+      const hairColors = ['#2B2B2B','#784212','#A66D2A','#5A2D0C','#E6C27A','#FFFFFF'];
+      const bgColors = ['#E6FDF6','#FFF5E6','#F3E8FF','#EEF2FF','#FFF1F2'];
+      const accessory = pickFrom(seed+'acc',['none','glasses','beard','earring','hat']);
+      const skin = pickFrom(seed+'skin', skinTones);
+      const hair = pickFrom(seed+'hair', hairColors);
+      const bg = pickFrom(seed+'bg', bgColors);
+
+      // facial feature params
+      const eyeY = pickFrom(seed+'eyy',[34,36,38]);
+      const mouth = pickFrom(seed+'mth',['smile','flat','small']);
+      const brow = pickFrom(seed+'brw',['normal','arched','flat']);
+
+      const initials = name.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+
+      const svg = `
+      <svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 120 120'>
+        <defs>
+          <linearGradient id='g1' x1='0' x2='1' y1='0' y2='1'>
+            <stop offset='0' stop-color='${bg}' stop-opacity='1'/>
+            <stop offset='1' stop-color='#E6F7F0' stop-opacity='0.6'/>
+          </linearGradient>
+        </defs>
+        <rect width='120' height='120' rx='18' fill='url(#g1)' />
+
+        <!-- head -->
+        <g transform='translate(20,18)'>
+          <rect x='0' y='0' width='80' height='80' rx='18' fill='${skin}' />
+
+          <!-- hair -->
+          <path d='M0 24 C10 4,70 4,80 24 L80 36 C70 20,10 20,0 36 Z' fill='${hair}' />
+
+          <!-- eyes -->
+          <g fill='#111' transform='translate(16,${eyeY})'>
+            <ellipse cx='8' cy='0' rx='4' ry='3'/>
+            <ellipse cx='40' cy='0' rx='4' ry='3'/>
+          </g>
+
+          <!-- mouth -->
+          ${ mouth === 'smile' ? "<path d='M24 52 C32 60,40 60,48 52' stroke='#6b3b2d' stroke-width='2' fill='none' stroke-linecap='round'/>" : mouth === 'flat' ? "<rect x='28' y='50' width='24' height='4' rx='2' fill='#6b3b2d'/>" : "<path d='M32 52 C36 54,40 54,44 52' stroke='#6b3b2d' stroke-width='1.5' fill='none' stroke-linecap='round'/>" }
+
+          <!-- accessories -->
+          ${ accessory === 'glasses' ? "<rect x='6' y='24' width='24' height='12' rx='3' fill='rgba(0,0,0,0.08)' stroke='#333'/> <rect x='34' y='24' width='24' height='12' rx='3' fill='rgba(0,0,0,0.08)' stroke='#333'/> <rect x='30' y='28' width='4' height='2' fill='#333'/>" : '' }
+          ${ accessory === 'beard' ? "<path d='M14 54 C22 70,46 70,60 54 C58 66,20 66,14 54 Z' fill='${hair}' />" : '' }
+          ${ accessory === 'earring' ? "<circle cx='4' cy='40' r='2' fill='#FFD166'/>" : '' }
+          ${ accessory === 'hat' ? "<path d='M0 10 C12 -6,68 -6,80 10 L80 18 C64 2,16 2,0 18 Z' fill='${hair}'/>" : '' }
+
+          <!-- initials (subtle) -->
+          <text x='8' y='74' font-family='Inter, Arial' font-size='8' fill='rgba(0,0,0,0.12)'>${initials}</text>
+        </g>
+      </svg>`;
+
+      return 'data:image/svg+xml;base64,' + btoa(svg);
+    }
+
+    // botões
+    document.getElementById('corrigeBtn').addEventListener('click',()=>{
+      input = '';
+      renderInput();
+      setStatus('Corrigido');
+    });
+
+    document.getElementById('brancoBtn').addEventListener('click',()=>{
+      showModal('Confirmar voto em branco', 'Deseja confirmar voto em branco?', ()=>{
+        stats.blank++;
+        total++;
+        logEvent('Voto em branco registrado');
+        updateStats();
+        showReceipt('Voto em branco');
+      });
+    });
+
+    document.getElementById('confirmBtn').addEventListener('click',()=>{
+      if(!input){
+        setStatus('Nenhum número digitado');
+        shakeScreen();
+        return;
+      }
+      const candidato = CANDIDATOS[input];
+      const tipo = candidato ? 'válido' : 'nulo';
+      showModal('Confirmar voto', `Confirmar voto ${tipo} para: ${candidato ? candidato.nome : 'Número inválido'} (${input})?`, ()=>{
+        if(candidato){ stats.valid++; logEvent(`Voto válido: ${candidato.nome} (${input})`); }
+        else { stats.null++; logEvent(`Voto nulo: número ${input}`); }
+        total++;
+        updateStats();
+        showReceipt(candidato ? `${candidato.nome} — ${input}` : `Nulo — ${input}`);
+        input = '';
+        renderInput();
+      });
+    });
+
+    document.getElementById('resetBtn').addEventListener('click',()=>{
+      if(!confirm('Reiniciar a sessão de votação?')) return;
+      stats.valid=stats.blank=stats.null=total=0;input='';renderInput();updateStats();eventsEl.innerHTML='';setStatus('Reiniciado');
+    });
+
+    document.getElementById('exportBtn').addEventListener('click',()=>{
+      const resumo = { total, stats, time: new Date().toISOString(), candidatos: CANDIDATOS };
+      const blob = new Blob([JSON.stringify(resumo,null,2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='resumo_votacao.json'; a.click(); URL.revokeObjectURL(url);
+      setStatus('Resumo exportado');
+    });
+
+    function updateStats(){
+      totalVotesEl.textContent = total;
+      validVotesEl.textContent = stats.valid;
+      blankVotesEl.textContent = stats.blank;
+      nullVotesEl.textContent = stats.null;
+    }
+
+    function logEvent(text){
+      const li = document.createElement('li'); li.textContent = `${new Date().toLocaleTimeString()} — ${text}`;
+      eventsEl.prepend(li);
+    }
+
+    function setStatus(t){ statusTextEl.textContent = t; }
+
+    function showReceipt(text){
+      receiptTextEl.textContent = text + ' — ' + new Date().toLocaleString();
+      receiptEl.style.display = 'block';
+      setTimeout(()=>receiptEl.style.display='none',3500);
+    }
+
+    // modal util
+    function showModal(title, body, yes){
+      const tpl = document.getElementById('modalTpl');
+      const node = tpl.content.cloneNode(true);
+      node.querySelector('#modalTitle').textContent = title;
+      node.querySelector('#modalBody').textContent = body;
+      const modal = node.querySelector('.modal');
+      modal.addEventListener('click',(e)=>{ if(e.target===modal){ closeModal(modal); }});
+      modal.querySelector('[data-action=cancel]').addEventListener('click',()=> closeModal(modal));
+      modal.querySelector('[data-action=ok]').addEventListener('click',()=>{ closeModal(modal); yes(); });
+      document.body.appendChild(modal);
+    }
+    function closeModal(m){ m.remove(); }
+
+    // efeitos sonoros simples (WebAudio)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(){
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(800,audioCtx.currentTime);
+      g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.03,audioCtx.currentTime+0.01);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime+0.09);
+    }
+
+    // animação leve quando número inválido
+    function shakeScreen(){
+      const s = document.querySelector('.screen');
+      s.animate([{transform:'translateX(0)'},{transform:'translateX(-8px)'},{transform:'translateX(8px)'},{transform:'translateX(0)'}],{duration:260});
+      playErrorTone();
+    }
+    function playErrorTone(){
+      const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+      o.type='square'; o.frequency.setValueAtTime(260,audioCtx.currentTime);
+      g.gain.setValueAtTime(0.0001,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.04,audioCtx.currentTime+0.02);
+      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.12);
+    }
+
+    // Atalhos de teclado
+    window.addEventListener('keydown', (e)=>{
+      if(e.key >= '0' && e.key <= '9') appendDigit(e.key);
+      if(e.key === 'Enter') document.getElementById('confirmBtn').click();
+      if(e.key === 'Backspace') document.getElementById('corrigeBtn').click();
+      if(e.key === 'b' || e.key === 'B') document.getElementById('brancoBtn').click();
+    });
+
+    // inicializa
+    renderInput(); updateStats(); setStatus('Pronto');
+  </script>
+</body>
+</html>
