@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urna Eletrônica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #282a36 0%, #1e1f2b 50%, #23252f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #f8f8f2;
+            padding: 20px;
+        }
+
+        .container {
+            background: linear-gradient(135deg, #44475a 0%, #3d3f52 100%);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            max-width: 700px;
+            border: 2px solid rgba(255, 121, 198, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ff79c6;
+            font-size: 32px;
+            text-shadow: 2px 2px 8px rgba(255, 121, 198, 0.3);
+        }
+
+        .candidates {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .candidate-card {
+            background: linear-gradient(135deg, #3d3f52 0%, #383a4a 100%);
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #6272a4;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .candidate-card:hover {
+            background: linear-gradient(135deg, #44475a 0%, #3d3f52 100%);
+            border-color: #ff79c6;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(255, 121, 198, 0.3);
+        }
+
+        .candidate-card h3 {
+            color: #50fa7b;
+            margin-bottom: 8px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .candidate-card p {
+            font-size: 11px;
+            color: #8be9fd;
+            margin-bottom: 10px;
+        }
+
+        .number {
+            font-size: 26px;
+            font-weight: bold;
+            color: #f1fa8c;
+            margin-bottom: 8px;
+        }
+
+        .info {
+            background: linear-gradient(135deg, #3d3f52 0%, #383a4a 100%);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 2px solid #ff79c6;
+            box-shadow: 0 4px 12px rgba(255, 121, 198, 0.2);
+        }
+
+        .info-label {
+            color: #8be9fd;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .vote-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #50fa7b;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-vote {
+            background: linear-gradient(135deg, #8be9fd 0%, #6eb3d6 100%);
+            color: #282a36;
+        }
+
+        .btn-vote:hover {
+            background: linear-gradient(135deg, #6eb3d6 0%, #5a96b8 100%);
+            box-shadow: 0 6px 12px rgba(139, 233, 253, 0.3);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #ff79c6 0%, #ff5ab0 100%);
+            color: #282a36;
+        }
+
+        .btn-clear:hover {
+            background: linear-gradient(135deg, #ff5ab0 0%, #ff3d99 100%);
+            box-shadow: 0 6px 12px rgba(255, 121, 198, 0.3);
+        }
+
+        .btn-special {
+            background: linear-gradient(135deg, #f1fa8c 0%, #e8f749 100%);
+            color: #282a36;
+            grid-column: 1 / -1;
+            font-size: 14px;
+        }
+
+        .btn-special:hover {
+            background: linear-gradient(135deg, #e8f749 0%, #dff106 100%);
+            box-shadow: 0 6px 12px rgba(241, 250, 140, 0.3);
+        }
+
+        .btn-confirm {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #50fa7b 0%, #35db4a 100%);
+            color: #282a36;
+            font-size: 18px;
+            padding: 15px;
+        }
+
+        .btn-confirm:hover {
+            background: linear-gradient(135deg, #35db4a 0%, #1eb827 100%);
+            box-shadow: 0 6px 12px rgba(80, 250, 123, 0.3);
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            min-height: 30px;
+            font-weight: 600;
+        }
+
+        .success {
+            color: #50fa7b;
+        }
+
+        .error {
+            color: #ff79c6;
+        }
+
+        .special-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗳️ Urna Eletrônica</h1>
+
+        <div class="info">
+            <div class="info-label">Voto para Presidente</div>
+            <div class="vote-display" id="voteDisplay">____</div>
+        </div>
+
+        <div class="candidates" id="candidatesList"></div>
+
+        <div class="special-buttons">
+            <button class="btn-special" onclick="voteBlank()">Voto em Branco</button>
+            <button class="btn-special" onclick="voteNull()">Voto Nulo</button>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-vote" onclick="addDigit('0')">0</button>
+            <button class="btn-vote" onclick="addDigit('1')">1</button>
+            <button class="btn-vote" onclick="addDigit('2')">2</button>
+            <button class="btn-vote" onclick="addDigit('3')">3</button>
+            <button class="btn-vote" onclick="addDigit('4')">4</button>
+            <button class="btn-vote" onclick="addDigit('5')">5</button>
+            <button class="btn-vote" onclick="addDigit('6')">6</button>
+            <button class="btn-vote" onclick="addDigit('7')">7</button>
+            <button class="btn-vote" onclick="addDigit('8')">8</button>
+            <button class="btn-vote" onclick="addDigit('9')">9</button>
+            <button class="btn-clear" onclick="clearVote()">Corrigir</button>
+            <button class="btn-confirm" onclick="confirmVote()">Confirmar Voto</button>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        const candidates = [
+            { number: '01', name: 'Marina Costa', info: 'Movimento Verde - Educação e Sustentabilidade' },
+            { number: '02', name: 'Victor Ferreira', info: 'Aliança Brasil - Economia e Crescimento' },
+            { number: '03', name: 'Sophia Silva', info: 'Renovação - Saúde e Bem-estar Social' },
+            { number: '04', name: 'Paulo Almeida', info: 'Infraestrutura Forte - Desenvolvimento Regional' }
+        ];
+
+        let currentVote = '';
+        let voteType = 'normal'; // 'normal', 'blank', 'null'
+
+        function playSound(type) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'beep') {
+                oscillator.frequency.value = 800;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } else if (type === 'success') {
+                oscillator.frequency.value = 1000;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            }
+        }
+
+        function addDigit(digit) {
+            if (currentVote.length < 2) {
+                currentVote += digit;
+                voteType = 'normal';
+                updateDisplay();
+                playSound('beep');
+            }
+        }
+
+        function voteBlank() {
+            currentVote = '';
+            voteType = 'blank';
+            updateDisplay();
+            playSound('beep');
+            document.getElementById('message').innerHTML = '';
+        }
+
+        function voteNull() {
+            currentVote = '';
+            voteType = 'null';
+            updateDisplay();
+            playSound('beep');
+            document.getElementById('message').innerHTML = '';
+        }
+
+        function clearVote() {
+            currentVote = '';
+            voteType = 'normal';
+            updateDisplay();
+            playSound('beep');
+            document.getElementById('message').innerHTML = '';
+        }
+
+        function updateDisplay() {
+            let display = '';
+            if (voteType === 'blank') {
+                display = 'BRANCO';
+            } else if (voteType === 'null') {
+                display = 'NULO';
+            } else {
+                display = currentVote.padEnd(2, '_');
+            }
+            document.getElementById('voteDisplay').textContent = display;
+        }
+
+        function confirmVote() {
+            if (voteType === 'blank') {
+                playSound('success');
+                showMessage('Voto em Branco confirmado!', 'success');
+                setTimeout(() => {
+                    currentVote = '';
+                    voteType = 'normal';
+                    updateDisplay();
+                    document.getElementById('message').innerHTML = '';
+                }, 2000);
+                return;
+            }
+
+            if (voteType === 'null') {
+                playSound('success');
+                showMessage('Voto Nulo confirmado!', 'success');
+                setTimeout(() => {
+                    currentVote = '';
+                    voteType = 'normal';
+                    updateDisplay();
+                    document.getElementById('message').innerHTML = '';
+                }, 2000);
+                return;
+            }
+
+            if (currentVote.length !== 2) {
+                showMessage('Digite 2 dígitos para votar', 'error');
+                return;
+            }
+
+            const candidate = candidates.find(c => c.number === currentVote);
+
+            if (candidate) {
+                playSound('success');
+                showMessage(`Voto confirmado para: ${candidate.name}`, 'success');
+                setTimeout(() => {
+                    currentVote = '';
+                    voteType = 'normal';
+                    updateDisplay();
+                    document.getElementById('message').innerHTML = '';
+                }, 2000);
+            } else {
+                showMessage('Candidato não encontrado', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = type;
+        }
+
+        function renderCandidates() {
+            const list = document.getElementById('candidatesList');
+            list.innerHTML = candidates.map(c => `
+                <div class="candidate-card" onclick="selectCandidate('${c.number}')">
+                    <div class="number">${c.number}</div>
+                    <h3>${c.name}</h3>
+                    <p>${c.info}</p>
+                </div>
+            `).join('');
+        }
+
+        function selectCandidate(number) {
+            currentVote = number;
+            voteType = 'normal';
+            updateDisplay();
+            playSound('beep');
+        }
+
+        renderCandidates();
+        updateDisplay();
+    </script>
+</body>
+</html>
